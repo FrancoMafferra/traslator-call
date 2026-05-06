@@ -121,3 +121,33 @@ select {
   font-weight: bold;
   font-size: 14px;
 }
+
+.call-box {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #eff6ff;
+  border-radius: 14px;
+}
+
+.call-status {
+  margin-top: 10px;
+  color: #344054;
+  font-size: 14px;
+}
+
+.error-message {
+  margin-top: 10px;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.call-box.ready {
+  background: #ecfdf3;
+}
+
+.call-hint {
+  margin-top: 8px;
+  color: #027a48;
+  font-size: 14px;
+}
