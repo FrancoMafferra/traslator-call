@@ -13,6 +13,7 @@ export function useTranslatorSocket() {
   const [spokenLanguage, setSpokenLanguage] = useState("es");
   const [listenLanguage, setListenLanguage] = useState("es");
   const [languageSaved, setLanguageSaved] = useState(false);
+  const [receivedText, setReceivedText] = useState("");
 
   const connectSocket = () => {
     const socket = new WebSocket("ws://localhost:3001");
@@ -50,6 +51,10 @@ export function useTranslatorSocket() {
 
       if (message.type === "AUDIO_CHUNK") {
         playReceivedAudio(message.audio);
+      }
+
+      if (message.type === "SPEECH_TEXT") {
+        setReceivedText(message.text);
       }
     };
 
@@ -107,5 +112,6 @@ export function useTranslatorSocket() {
     createRoom,
     joinRoom,
     saveLanguageConfig,
+    receivedText,
   };
 }

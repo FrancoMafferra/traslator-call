@@ -1,4 +1,4 @@
-const generateRoomId = require('../utils/generateRoomId');
+const generateRoomId = require("../utils/generateRoomId");
 
 function handleCreateRoom({ ws, rooms }) {
   const roomId = generateRoomId();
@@ -8,9 +8,9 @@ function handleCreateRoom({ ws, rooms }) {
 
   ws.send(
     JSON.stringify({
-      type: 'ROOM_CREATED',
+      type: "ROOM_CREATED",
       roomId,
-    })
+    }),
   );
 
   console.log(`Sala creada: ${roomId}`);
@@ -22,9 +22,9 @@ function handleJoinRoom({ ws, rooms, message }) {
   if (!rooms[roomId]) {
     ws.send(
       JSON.stringify({
-        type: 'ERROR',
-        message: 'Sala no encontrada',
-      })
+        type: "ERROR",
+        message: "Sala no encontrada",
+      }),
     );
 
     return;
@@ -33,9 +33,9 @@ function handleJoinRoom({ ws, rooms, message }) {
   if (rooms[roomId].length >= 2) {
     ws.send(
       JSON.stringify({
-        type: 'ERROR',
-        message: 'Sala llena',
-      })
+        type: "ERROR",
+        message: "Sala llena",
+      }),
     );
 
     return;
@@ -47,10 +47,10 @@ function handleJoinRoom({ ws, rooms, message }) {
   rooms[roomId].forEach((client) => {
     client.send(
       JSON.stringify({
-        type: 'USER_JOINED',
+        type: "USER_JOINED",
         roomId,
         users: rooms[roomId].length,
-      })
+      }),
     );
   });
 
@@ -65,12 +65,12 @@ function handleLanguageConfig({ ws, message }) {
 
   ws.send(
     JSON.stringify({
-      type: 'LANGUAGE_CONFIG_SAVED',
+      type: "LANGUAGE_CONFIG_SAVED",
       languageConfig: ws.languageConfig,
-    })
+    }),
   );
 
-  console.log('Configuración de idioma guardada:', ws.languageConfig);
+  console.log("Configuración de idioma guardada:", ws.languageConfig);
 }
 
 function handleDisconnect({ ws, rooms }) {
@@ -87,9 +87,28 @@ function handleDisconnect({ ws, rooms }) {
   console.log(`Usuario desconectado de ${roomId}`);
 }
 
+function handleSpeechText({ ws, rooms, message }) {
+  const roomId = ws.roomId;
+
+  if (!roomId || !rooms[roomId]) return;
+
+  rooms[roomId].forEach((client) => {
+    if (client !== ws && client.readyState === 1) {
+      client.send(
+        JSON.stringify({
+          type: "SPEECH_TEXT",
+          text: message.text,
+          fromLanguage: message.fromLanguage,
+        }),
+      );
+    }
+  });
+}
+
 module.exports = {
   handleCreateRoom,
   handleJoinRoom,
   handleLanguageConfig,
   handleDisconnect,
+  handleSpeechText,
 };

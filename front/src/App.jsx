@@ -6,6 +6,7 @@ import CallRoom from './components/CallRoom';
 import { useTranslatorSocket } from './hooks/useTranslatorSocket';
 import { useMicrophone } from './hooks/useMicrophone';
 import { useAudioSender } from './hooks/useAudioSender';
+import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 
 function App() {
   const translatorSocket = useTranslatorSocket();
@@ -15,6 +16,11 @@ function App() {
   const audioSender = useAudioSender({
     streamRef: microphone.streamRef,
     socketRef: translatorSocket.socketRef,
+  });
+
+  const speechRecognition = useSpeechRecognition({
+    socketRef: translatorSocket.socketRef,
+    spokenLanguage: translatorSocket.spokenLanguage,
   });
 
   return (
@@ -37,6 +43,7 @@ function App() {
             translatorSocket={translatorSocket}
             microphone={microphone}
             audioSender={audioSender}
+            speechRecognition={speechRecognition}
           />
         )}
       </section>

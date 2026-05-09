@@ -151,3 +151,21 @@ select {
   color: #027a48;
   font-size: 14px;
 }
+
+.speech-box {
+	margin-top: 20px;
+	padding: 16px;
+	background: #f8fafc;
+	border-radius: 14px;
+	text-align: left;
+}
+
+.speech-box button {
+	margin-bottom: 12px;
+}
+
+.speech-box p {
+	margin-top: 8px;
+	color: #344054;
+	line-height: 1.5;
+}

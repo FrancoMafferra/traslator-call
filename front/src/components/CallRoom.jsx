@@ -2,7 +2,12 @@ function CallRoom({
 	translatorSocket,
 	microphone,
 	audioSender,
+	speechRecognition,
 }) {
+	if (!speechRecognition) {
+		return <p>Cargando reconocimiento de voz...</p>;
+	}
+
 	const leaveRoom = () => {
 		window.location.reload();
 	};
@@ -11,9 +16,7 @@ function CallRoom({
 		<div className="room-screen">
 			<div className="room-header">
 				<div>
-					<h2>
-						Sala {translatorSocket.roomId}
-					</h2>
+					<h2>Sala {translatorSocket.roomId}</h2>
 
 					<p>
 						Usuarios conectados:{' '}
@@ -21,9 +24,7 @@ function CallRoom({
 					</p>
 				</div>
 
-				<button onClick={leaveRoom}>
-					Salir
-				</button>
+				<button onClick={leaveRoom}>Salir</button>
 			</div>
 
 			<div className="room-body">
@@ -46,23 +47,49 @@ function CallRoom({
 						</strong>
 					</p>
 				</div>
+
+				<div className="speech-box">
+					{!speechRecognition.speechSupported && (
+						<p className="error-message">
+							Tu navegador no soporta reconocimiento de voz.
+							Probá con Chrome o Edge.
+						</p>
+					)}
+
+					{!speechRecognition.listening ? (
+						<button onClick={speechRecognition.startListening}>
+							Activar subtítulos
+						</button>
+					) : (
+						<button onClick={speechRecognition.stopListening}>
+							Pausar subtítulos
+						</button>
+					)}
+
+					<p>
+						Mi último texto:{' '}
+						<strong>
+							{speechRecognition.lastTranscript || '...'}
+						</strong>
+					</p>
+
+					<p>
+						Texto recibido:{' '}
+						<strong>
+							{translatorSocket.receivedText ||
+								'Esperando voz...'}
+						</strong>
+					</p>
+				</div>
 			</div>
 
 			<div className="room-footer">
 				{!audioSender.audioSending ? (
-					<button
-						onClick={
-							audioSender.startSendingAudio
-						}
-					>
+					<button onClick={audioSender.startSendingAudio}>
 						Iniciar audio
 					</button>
 				) : (
-					<button
-						onClick={
-							audioSender.stopSendingAudio
-						}
-					>
+					<button onClick={audioSender.stopSendingAudio}>
 						Pausar audio
 					</button>
 				)}
