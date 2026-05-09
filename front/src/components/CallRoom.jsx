@@ -3,9 +3,18 @@ function CallRoom({
 	microphone,
 	audioSender,
 	speechRecognition,
+	webRTC,
 }) {
 	if (!speechRecognition) {
 		return <p>Cargando reconocimiento de voz...</p>;
+	}
+
+	if (!webRTC) {
+		return (
+			<p style={{ color: 'red' }}>
+				Error: webRTC no fue inicializado. Revisar useWebRTC.js.
+			</p>
+		);
 	}
 
 	const leaveRoom = () => {
@@ -67,32 +76,41 @@ function CallRoom({
 					)}
 
 					<p>
-						Mi último texto:{' '}
+						Último msj:{' '}
 						<strong>
 							{speechRecognition.lastTranscript || '...'}
 						</strong>
 					</p>
 
 					<p>
-						Texto recibido:{' '}
+						Msj recibido:{' '}
 						<strong>
 							{translatorSocket.receivedText ||
-								'Esperando voz...'}
+								'Esperando msj...'}
 						</strong>
 					</p>
 				</div>
-			</div>
 
-			<div className="room-footer">
-				{!audioSender.audioSending ? (
-					<button onClick={audioSender.startSendingAudio}>
-						Iniciar audio
+				<audio
+					ref={webRTC.remoteAudioRef}
+					autoPlay
+					playsInline
+				/>
+
+				<div className="webrtc-box">
+					<p>
+						WebRTC:{' '}
+						<strong>{webRTC.webrtcStatus}</strong>
+					</p>
+
+					<button onClick={webRTC.startCallAsCaller}>
+						Iniciar llamada WebRTC
 					</button>
-				) : (
-					<button onClick={audioSender.stopSendingAudio}>
-						Pausar audio
+
+					<button onClick={webRTC.endCall}>
+						Cortar WebRTC
 					</button>
-				)}
+				</div>
 			</div>
 		</div>
 	);

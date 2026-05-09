@@ -169,3 +169,11 @@ select {
 	color: #344054;
 	line-height: 1.5;
 }
+
+.webrtc-box {
+  margin-top: 20px;
+  padding: 16px;
+  background: #eef2ff;
+  border-radius: 14px;
+  text-align: left;
+}

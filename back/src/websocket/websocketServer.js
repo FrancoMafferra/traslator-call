@@ -8,6 +8,12 @@ const {
   handleSpeechText,
 } = require("./roomHandlers");
 
+const {
+  handleWebRTCOffer,
+  handleWebRTCAnswer,
+  handleWebRTCIceCandidate,
+} = require("./webrtcHandlers");
+
 const { handleAudioChunk } = require("./audioHandlers");
 
 function setupWebSocketServer(server) {
@@ -42,6 +48,18 @@ function setupWebSocketServer(server) {
 
         case "SPEECH_TEXT":
           handleSpeechText({ ws, rooms, message });
+          break;
+
+        case "WEBRTC_OFFER":
+          handleWebRTCOffer({ ws, rooms, message });
+          break;
+
+        case "WEBRTC_ANSWER":
+          handleWebRTCAnswer({ ws, rooms, message });
+          break;
+
+        case "WEBRTC_ICE_CANDIDATE":
+          handleWebRTCIceCandidate({ ws, rooms, message });
           break;
 
         default:

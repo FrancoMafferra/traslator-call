@@ -7,6 +7,8 @@ import { useTranslatorSocket } from './hooks/useTranslatorSocket';
 import { useMicrophone } from './hooks/useMicrophone';
 import { useAudioSender } from './hooks/useAudioSender';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
+import { useEffect } from 'react';
+import { useWebRTC } from './hooks/useWebRTC';
 
 function App() {
   const translatorSocket = useTranslatorSocket();
@@ -22,6 +24,19 @@ function App() {
     socketRef: translatorSocket.socketRef,
     spokenLanguage: translatorSocket.spokenLanguage,
   });
+
+  const webRTC = useWebRTC({
+    socketRef: translatorSocket.socketRef,
+    streamRef: microphone.streamRef,
+  });
+
+  useEffect(() => {
+    translatorSocket.registerWebRTCHandlers({
+      handleOffer: webRTC.handleOffer,
+      handleAnswer: webRTC.handleAnswer,
+      handleIceCandidate: webRTC.handleIceCandidate,
+    });
+  }, [translatorSocket, webRTC]);
 
   return (
     <main className="container">
@@ -44,6 +59,7 @@ function App() {
             microphone={microphone}
             audioSender={audioSender}
             speechRecognition={speechRecognition}
+            webRTC={webRTC}
           />
         )}
       </section>
