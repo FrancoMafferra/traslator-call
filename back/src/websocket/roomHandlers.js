@@ -1,4 +1,5 @@
 const generateRoomId = require("../utils/generateRoomId");
+const { translateText } = require("../services/translationService");
 
 function handleCreateRoom({ ws, rooms }) {
   const roomId = generateRoomId();
@@ -87,22 +88,32 @@ function handleDisconnect({ ws, rooms }) {
   console.log(`Usuario desconectado de ${roomId}`);
 }
 
-function handleSpeechText({ ws, rooms, message }) {
+async function handleSpeechText({ ws, rooms, message }) {
   const roomId = ws.roomId;
 
   if (!roomId || !rooms[roomId]) return;
 
-  rooms[roomId].forEach((client) => {
+  for (const client of rooms[roomId]) {
     if (client !== ws && client.readyState === 1) {
+      const targetLanguage = client.listenLanguage || "en";
+
+      const translatedText = await translateText({
+        text: message.text,
+        sourceLanguage: message.fromLanguage,
+        targetLanguage,
+      });
+
       client.send(
         JSON.stringify({
-          type: "SPEECH_TEXT",
-          text: message.text,
+          type: "TRANSLATED_TEXT",
+          originalText: message.text,
+          translatedText,
           fromLanguage: message.fromLanguage,
+          targetLanguage,
         }),
       );
     }
-  });
+  }
 }
 
 module.exports = {

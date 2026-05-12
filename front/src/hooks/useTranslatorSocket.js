@@ -59,8 +59,8 @@ export function useTranslatorSocket() {
         playReceivedAudio(message.audio);
       }
 
-      if (message.type === "SPEECH_TEXT") {
-        setReceivedText(message.text);
+      if (message.type === "TRANSLATED_TEXT") {
+        setReceivedText(message.translatedText);
       }
 
       if (message.type === "WEBRTC_OFFER") {
