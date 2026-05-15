@@ -93,26 +93,39 @@ async function handleSpeechText({ ws, rooms, message }) {
 
   if (!roomId || !rooms[roomId]) return;
 
+  const sourceLanguage =
+    message.fromLanguage || ws.languageConfig?.spokenLanguage || "en";
+
   for (const client of rooms[roomId]) {
-    if (client !== ws && client.readyState === 1) {
-      const targetLanguage = client.listenLanguage || "en";
+    if (client === ws || client.readyState !== 1) continue;
 
-      const translatedText = await translateText({
-        text: message.text,
-        sourceLanguage: message.fromLanguage,
+    const targetLanguage = client.languageConfig?.listenLanguage || "en";
+
+    console.log("Traduciendo:", {
+      text: message.text,
+      sourceLanguage,
+      targetLanguage,
+      receptorConfig: client.languageConfig,
+    });
+
+    const translatedText =
+      sourceLanguage === targetLanguage
+        ? message.text
+        : await translateText({
+            text: message.text,
+            sourceLanguage,
+            targetLanguage,
+          });
+
+    client.send(
+      JSON.stringify({
+        type: "TRANSLATED_TEXT",
+        originalText: message.text,
+        translatedText,
+        fromLanguage: sourceLanguage,
         targetLanguage,
-      });
-
-      client.send(
-        JSON.stringify({
-          type: "TRANSLATED_TEXT",
-          originalText: message.text,
-          translatedText,
-          fromLanguage: message.fromLanguage,
-          targetLanguage,
-        }),
-      );
-    }
+      }),
+    );
   }
 }
 

@@ -23,6 +23,7 @@ function App() {
   const speechRecognition = useSpeechRecognition({
     socketRef: translatorSocket.socketRef,
     spokenLanguage: translatorSocket.spokenLanguage,
+    onTranscript: translatorSocket.addOwnMessage,
   });
 
   const webRTC = useWebRTC({

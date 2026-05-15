@@ -24,7 +24,7 @@ export function useSpeechRecognition({ socketRef, spokenLanguage }) {
 
     const recognition = new SpeechRecognition();
 
-    recognition.lang = languageMap[spokenLanguage] || "es-ES";
+    recognition.lang = languageMap[spokenLanguage] || "en-US";
     recognition.continuous = true;
     recognition.interimResults = false;
 
@@ -43,6 +43,17 @@ export function useSpeechRecognition({ socketRef, spokenLanguage }) {
           fromLanguage: spokenLanguage,
         }),
       );
+
+      onTranscript?.({
+        id: Date.now(),
+        type: "mine",
+        text,
+      });
+      
+      console.log("Speech detectado:", {
+        spokenLanguage,
+        text,
+      });
     };
 
     recognition.onerror = (event) => {

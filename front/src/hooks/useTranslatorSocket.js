@@ -14,6 +14,7 @@ export function useTranslatorSocket() {
   const [listenLanguage, setListenLanguage] = useState("es");
   const [languageSaved, setLanguageSaved] = useState(false);
   const [receivedText, setReceivedText] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const webrtcHandlersRef = useRef(null);
 
@@ -22,7 +23,7 @@ export function useTranslatorSocket() {
   };
 
   const connectSocket = () => {
-    const socket = new WebSocket("ws://localhost:3001");
+    const socket = new WebSocket("ws://192.168.100.19:3001");
 
     socketRef.current = socket;
 
@@ -60,7 +61,17 @@ export function useTranslatorSocket() {
       }
 
       if (message.type === "TRANSLATED_TEXT") {
-        setReceivedText(message.translatedText);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            type: "received",
+            originalText: message.originalText,
+            translatedText: message.translatedText,
+            fromLanguage: message.fromLanguage,
+            targetLanguage: message.targetLanguage,
+          },
+        ]);
       }
 
       if (message.type === "WEBRTC_OFFER") {
@@ -109,6 +120,10 @@ export function useTranslatorSocket() {
     );
   };
 
+  const addOwnMessage = (message) => {
+    setMessages((prev) => [...prev, message]);
+  };
+
   return {
     socketRef,
 
@@ -132,5 +147,7 @@ export function useTranslatorSocket() {
     joinRoom,
     saveLanguageConfig,
     registerWebRTCHandlers,
+    addOwnMessage,
+    messages,
   };
 }
