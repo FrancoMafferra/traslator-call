@@ -9,6 +9,7 @@ import { useAudioSender } from './hooks/useAudioSender';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useEffect } from 'react';
 import { useWebRTC } from './hooks/useWebRTC';
+import { useTextToSpeech } from './hooks/useTextToSpeech';
 
 function App() {
   const translatorSocket = useTranslatorSocket();
@@ -30,6 +31,8 @@ function App() {
     socketRef: translatorSocket.socketRef,
     streamRef: microphone.streamRef,
   });
+
+  const textToSpeech = useTextToSpeech();
 
   useEffect(() => {
     translatorSocket.registerWebRTCHandlers({
@@ -61,6 +64,7 @@ function App() {
             audioSender={audioSender}
             speechRecognition={speechRecognition}
             webRTC={webRTC}
+            textToSpeech={textToSpeech}
           />
         )}
       </section>

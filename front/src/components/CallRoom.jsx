@@ -1,143 +1,155 @@
 import { useEffect, useRef } from 'react';
 
 function CallRoom({
-  translatorSocket,
-  microphone,
-  audioSender,
-  speechRecognition,
-  webRTC,
+	translatorSocket,
+	microphone,
+	audioSender,
+	speechRecognition,
+	webRTC,
+	textToSpeech,
 }) {
-  const messagesEndRef = useRef(null);
+	const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: 'smooth',
-    });
-  }, [translatorSocket.messages]);
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({
+			behavior: 'smooth',
+		});
 
-  if (!speechRecognition) {
-    return <p>Cargando reconocimiento de voz...</p>;
-  }
+		const lastMessage =
+			translatorSocket.messages[translatorSocket.messages.length - 1];
 
-  if (!webRTC) {
-    return (
-      <p style={{ color: 'red' }}>
-        Error: webRTC no fue inicializado. Revisar useWebRTC.js.
-      </p>
-    );
-  }
+		if (lastMessage?.type === 'received') {
+			textToSpeech?.speak({
+				text: lastMessage.translatedText,
+				language: lastMessage.targetLanguage,
+			});
+		}
+	}, [translatorSocket.messages]);
 
-  const leaveRoom = () => {
-    window.location.reload();
-  };
+	if (!speechRecognition) {
+		return <p>Cargando reconocimiento de voz...</p>;
+	}
 
-  return (
-    <div className="room-screen">
-      <div className="room-header">
-        <div>
-          <h2>Sala {translatorSocket.roomId}</h2>
+	if (!webRTC) {
+		return (
+			<p style={{ color: 'red' }}>
+				Error: webRTC no fue inicializado. Revisar useWebRTC.js.
+			</p>
+		);
+	}
 
-          <p>
-            Usuarios conectados: {translatorSocket.usersCount}/2
-          </p>
-        </div>
+	const leaveRoom = () => {
+		window.location.reload();
+	};
 
-        <button onClick={leaveRoom}>Salir</button>
-      </div>
+	return (
+		<div className="room-screen">
+			<div className="room-header">
+				<div>
+					<h2>Sala {translatorSocket.roomId}</h2>
 
-      <div className="room-body">
-        <div className="left-panel">
-          <div className="room-card">
-            <p>
-              Micrófono:{' '}
-              <strong>
-                {microphone.microphoneReady
-                  ? 'listo'
-                  : 'no disponible'}
-              </strong>
-            </p>
+					<p>
+						Usuarios conectados: {translatorSocket.usersCount}/2
+					</p>
+				</div>
 
-            <p>
-              Audio:{' '}
-              <strong>
-                {audioSender.audioSending
-                  ? 'activo'
-                  : 'pausado'}
-              </strong>
-            </p>
-          </div>
+				<button onClick={leaveRoom}>Salir</button>
+			</div>
 
-          <div className="webrtc-box">
-            <p>
-              WebRTC: <strong>{webRTC.webrtcStatus}</strong>
-            </p>
+			<div className="room-body">
+				<div className="left-panel">
+					<div className="room-card">
+						<p>
+							Micrófono:{' '}
+							<strong>
+								{microphone.microphoneReady
+									? 'listo'
+									: 'no disponible'}
+							</strong>
+						</p>
 
-            <button onClick={webRTC.startCallAsCaller}>
-              Iniciar llamada WebRTC
-            </button>
+						<p>
+							Audio:{' '}
+							<strong>
+								{audioSender.audioSending
+									? 'activo'
+									: 'pausado'}
+							</strong>
+						</p>
+					</div>
 
-            <button onClick={webRTC.endCall}>
-              Cortar WebRTC
-            </button>
-          </div>
-        </div>
+					<div className="webrtc-box">
+						<p>
+							WebRTC: <strong>{webRTC.webrtcStatus}</strong>
+						</p>
 
-        <div className="right-panel">
-          <div className="speech-box">
-            {!speechRecognition.speechSupported && (
-              <p className="error-message">
-                Tu navegador no soporta reconocimiento de voz.
-                Probá con Chrome o Edge.
-              </p>
-            )}
+						<button onClick={webRTC.startCallAsCaller}>
+							Iniciar llamada WebRTC
+						</button>
 
-            {!speechRecognition.listening ? (
-              <button onClick={speechRecognition.startListening}>
-                Activar subtítulos
-              </button>
-            ) : (
-              <button onClick={speechRecognition.stopListening}>
-                Pausar subtítulos
-              </button>
-            )}
+						<button onClick={webRTC.endCall}>
+							Cortar WebRTC
+						</button>
+					</div>
+				</div>
 
-            <div className="messages-container">
-              {translatorSocket.messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={
-                    msg.type === 'mine'
-                      ? 'message mine'
-                      : 'message received'
-                  }
-                >
-                  {msg.type === 'mine' ? (
-                    <p>{msg.text}</p>
-                  ) : (
-                    <>
-                      <p>{msg.translatedText}</p>
+				<div className="right-panel">
+					<div className="speech-box">
+						{!speechRecognition.speechSupported && (
+							<p className="error-message">
+								Tu navegador no soporta reconocimiento de voz.
+								Probá con Chrome o Edge.
+							</p>
+						)}
 
-                      <span>
-                        {msg.fromLanguage} → {msg.targetLanguage}
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))}
+						{!speechRecognition.listening ? (
+							<button onClick={speechRecognition.startListening}>
+								Activar subtítulos
+							</button>
+						) : (
+							<button onClick={speechRecognition.stopListening}>
+								Pausar subtítulos
+							</button>
+						)}
 
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-        </div>
+						<div className="messages-container">
+							{translatorSocket.messages.map((msg) => (
+								<div
+									key={msg.id}
+									className={
+										msg.type === 'mine'
+											? 'message mine'
+											: 'message received'
+									}
+								>
+									{msg.type === 'mine' ? (
+										<p>{msg.text}</p>
+									) : (
+										<>
+											<p>{msg.translatedText}</p>
 
-        <audio
-          ref={webRTC.remoteAudioRef}
-          autoPlay
-          playsInline
-        />
-      </div>
-    </div>
-  );
+											<span>
+												{msg.fromLanguage} → {msg.targetLanguage}
+											</span>
+										</>
+									)}
+								</div>
+							))}
+
+							<div ref={messagesEndRef} />
+						</div>
+					</div>
+				</div>
+
+				<audio
+					ref={webRTC.remoteAudioRef}
+					autoPlay
+					playsInline
+					muted={true}
+				/>
+			</div>
+		</div>
+	);
 }
 
 export default CallRoom;
