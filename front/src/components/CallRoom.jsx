@@ -37,58 +37,77 @@ function CallRoom({
 			</div>
 
 			<div className="room-body">
-				<div className="room-card">
-					<p>
-						Micrófono:{' '}
-						<strong>
-							{microphone.microphoneReady
-								? 'listo'
-								: 'no disponible'}
-						</strong>
-					</p>
+				<div className="left-panel">
+					<div className="room-card">
+						<p>
+							Micrófono:{' '}
+							<strong>
+								{microphone.microphoneReady
+									? 'listo'
+									: 'no disponible'}
+							</strong>
+						</p>
 
-					<p>
-						Audio:{' '}
-						<strong>
-							{audioSender.audioSending
-								? 'activo'
-								: 'pausado'}
-						</strong>
-					</p>
+						<p>
+							Audio:{' '}
+							<strong>
+								{audioSender.audioSending
+									? 'activo'
+									: 'pausado'}
+							</strong>
+						</p>
+					</div>
+
+					<div className="webrtc-box">
+						<p>
+							WebRTC:{' '}
+							<strong>{webRTC.webrtcStatus}</strong>
+						</p>
+
+						<button onClick={webRTC.startCallAsCaller}>
+							Iniciar llamada WebRTC
+						</button>
+
+						<button onClick={webRTC.endCall}>
+							Cortar WebRTC
+						</button>
+					</div>
 				</div>
 
-				<div className="speech-box">
-					{!speechRecognition.speechSupported && (
-						<p className="error-message">
-							Tu navegador no soporta reconocimiento de voz.
-							Probá con Chrome o Edge.
+				<div className="right-panel">
+					<div className="speech-box">
+						{!speechRecognition.speechSupported && (
+							<p className="error-message">
+								Tu navegador no soporta reconocimiento de voz.
+								Probá con Chrome o Edge.
+							</p>
+						)}
+
+						{!speechRecognition.listening ? (
+							<button onClick={speechRecognition.startListening}>
+								Activar subtítulos
+							</button>
+						) : (
+							<button onClick={speechRecognition.stopListening}>
+								Pausar subtítulos
+							</button>
+						)}
+
+						<p>
+							Último msj:{' '}
+							<strong>
+								{speechRecognition.lastTranscript || '...'}
+							</strong>
 						</p>
-					)}
 
-					{!speechRecognition.listening ? (
-						<button onClick={speechRecognition.startListening}>
-							Activar subtítulos
-						</button>
-					) : (
-						<button onClick={speechRecognition.stopListening}>
-							Pausar subtítulos
-						</button>
-					)}
-
-					<p>
-						Último msj:{' '}
-						<strong>
-							{speechRecognition.lastTranscript || '...'}
-						</strong>
-					</p>
-
-					<p>
-						Msj recibido:{' '}
-						<strong>
-							{translatorSocket.receivedText ||
-								'Esperando msj...'}
-						</strong>
-					</p>
+						<p>
+							Msj recibido:{' '}
+							<strong>
+								{translatorSocket.receivedText ||
+									'Esperando msj...'}
+							</strong>
+						</p>
+					</div>
 				</div>
 
 				<audio
@@ -96,21 +115,6 @@ function CallRoom({
 					autoPlay
 					playsInline
 				/>
-
-				<div className="webrtc-box">
-					<p>
-						WebRTC:{' '}
-						<strong>{webRTC.webrtcStatus}</strong>
-					</p>
-
-					<button onClick={webRTC.startCallAsCaller}>
-						Iniciar llamada WebRTC
-					</button>
-
-					<button onClick={webRTC.endCall}>
-						Cortar WebRTC
-					</button>
-				</div>
 			</div>
 		</div>
 	);

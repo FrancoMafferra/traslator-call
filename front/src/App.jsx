@@ -40,7 +40,7 @@ function App() {
 
   return (
     <main className="container">
-      <section className="card">
+      <section className={translatorSocket.roomId ? 'call-layout' : 'card'}>
         <h1>Translator Call</h1>
 
         <p className="subtitle">
