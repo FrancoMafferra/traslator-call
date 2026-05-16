@@ -4,9 +4,20 @@ function CallControls({
   microphoneReady,
   microphoneError,
   requestMicrophone,
+  textToSpeech,
 }) {
   const enterCall = async () => {
-    await requestMicrophone();
+    const stream = await requestMicrophone();
+
+    textToSpeech?.warmupVoices();
+
+    if (stream && !connected) {
+      connectSocket();
+    }
+  };
+
+  const enterAsViewer = () => {
+    textToSpeech?.warmupVoices();
 
     if (!connected) {
       connectSocket();
@@ -33,8 +44,16 @@ function CallControls({
         Entrar a la llamada
       </button>
 
+      <button onClick={enterAsViewer}>
+        Entrar como espectador
+      </button>
+
       <p className="call-status">
         Micrófono: <strong>pendiente</strong>
+      </p>
+
+      <p className="call-hint">
+        Usá espectador si solo querés recibir subtítulos y voz traducida.
       </p>
 
       {microphoneError && (

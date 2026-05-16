@@ -6,6 +6,7 @@ import ConnectionStatus from './ConnectionStatus';
 function HomeScreen({
 	translatorSocket,
 	microphone,
+	textToSpeech,
 }) {
 	return (
 		<>
@@ -19,6 +20,7 @@ function HomeScreen({
 				microphoneReady={microphone.microphoneReady}
 				microphoneError={microphone.microphoneError}
 				requestMicrophone={microphone.requestMicrophone}
+				textToSpeech={textToSpeech}
 			/>
 
 			{translatorSocket.connected && (

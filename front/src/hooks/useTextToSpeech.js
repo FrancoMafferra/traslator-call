@@ -24,8 +24,21 @@ export function useTextToSpeech() {
     window.speechSynthesis?.cancel();
   };
 
+  const warmupVoices = () => {
+    if (!window.speechSynthesis) return;
+
+    window.speechSynthesis.getVoices();
+
+    const utterance = new SpeechSynthesisUtterance(" ");
+    utterance.volume = 0;
+    utterance.lang = "en-US";
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   return {
     speak,
     stop,
+    warmupVoices,
   };
 }

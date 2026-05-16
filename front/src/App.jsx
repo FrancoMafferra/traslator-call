@@ -56,6 +56,7 @@ function App() {
           <HomeScreen
             translatorSocket={translatorSocket}
             microphone={microphone}
+            textToSpeech={textToSpeech}
           />
         ) : (
           <CallRoom
