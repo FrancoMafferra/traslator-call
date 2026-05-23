@@ -46,6 +46,8 @@ export function useWebRTC({ socketRef, streamRef }) {
     };
 
     peerConnection.onconnectionstatechange = () => {
+      console.log("[WEBRTC_CONNECTION_STATE]", peerConnection.connectionState);
+
       setWebrtcStatus(peerConnection.connectionState);
 
       if (peerConnection.connectionState === "connected") {
@@ -65,11 +67,17 @@ export function useWebRTC({ socketRef, streamRef }) {
   };
 
   const startCallAsCaller = async () => {
+    console.time("[WEBRTC_CREATE_OFFER]");
+
     const peerConnection = peerConnectionRef.current || createPeerConnection();
 
     const offer = await peerConnection.createOffer();
 
     await peerConnection.setLocalDescription(offer);
+
+    console.timeEnd("[WEBRTC_CREATE_OFFER]");
+
+    console.log("[WEBRTC_SEND_OFFER]");
 
     socketRef.current?.send(
       JSON.stringify({
@@ -82,6 +90,8 @@ export function useWebRTC({ socketRef, streamRef }) {
   };
 
   const handleOffer = async (offer) => {
+    console.time("[WEBRTC_HANDLE_OFFER]");
+
     const peerConnection = peerConnectionRef.current || createPeerConnection();
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -89,6 +99,10 @@ export function useWebRTC({ socketRef, streamRef }) {
     const answer = await peerConnection.createAnswer();
 
     await peerConnection.setLocalDescription(answer);
+
+    console.timeEnd("[WEBRTC_HANDLE_OFFER]");
+
+    console.log("[WEBRTC_SEND_ANSWER]");
 
     socketRef.current?.send(
       JSON.stringify({

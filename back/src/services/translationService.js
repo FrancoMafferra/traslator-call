@@ -1,11 +1,13 @@
 async function translateText({ text, sourceLanguage, targetLanguage }) {
+  const label = `[LIBRETRANSLATE ${sourceLanguage}->${targetLanguage}]`;
+  console.time(label);
+
   try {
-    const response = await fetch("http://localhost:5000/translate", {
+    const response = await fetch("http://127.0.0.1:5000/translate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         q: text,
         source: sourceLanguage,
@@ -16,9 +18,23 @@ async function translateText({ text, sourceLanguage, targetLanguage }) {
 
     const data = await response.json();
 
+    console.timeEnd(label);
+
+    console.log("[LIBRETRANSLATE_RESULT]", {
+      originalText: text,
+      translatedText: data.translatedText,
+    });
+
     return data.translatedText;
   } catch (error) {
-    console.error("Error traduciendo:", error);
+    console.timeEnd(label);
+
+    console.error("[LIBRETRANSLATE_ERROR]", {
+      text,
+      sourceLanguage,
+      targetLanguage,
+      error: error.message,
+    });
 
     return text;
   }

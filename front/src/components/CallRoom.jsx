@@ -26,6 +26,16 @@ function CallRoom({
 		}
 	}, [translatorSocket.messages]);
 
+	useEffect(() => {
+		if (!microphone.microphoneReady) return;
+		if (speechRecognition.listening) return;
+
+		speechRecognition.startListening();
+	}, [
+		microphone.microphoneReady,
+		speechRecognition.listening,
+	]);
+
 	if (!speechRecognition) {
 		return <p>Cargando reconocimiento de voz...</p>;
 	}
@@ -69,12 +79,13 @@ function CallRoom({
 						</p>
 
 						<p>
-							Audio:{' '}
-							<strong>
-								{audioSender.audioSending
-									? 'activo'
-									: 'pausado'}
-							</strong>
+							Audio WebRTC:{' '}
+							<strong>{webRTC.webrtcStatus}</strong>
+						</p>
+
+						<p>
+							Voz traducida:{' '}
+							<strong>activa</strong>
 						</p>
 					</div>
 
@@ -83,9 +94,15 @@ function CallRoom({
 							WebRTC: <strong>{webRTC.webrtcStatus}</strong>
 						</p>
 
-						<button onClick={webRTC.startCallAsCaller}>
-							Iniciar llamada WebRTC
-						</button>
+						{!webRTC.webrtcConnected ? (
+							<button onClick={webRTC.startCallAsCaller}>
+								Iniciar llamada WebRTC
+							</button>
+						) : (
+							<button disabled>
+								Llamada WebRTC iniciada
+							</button>
+						)}
 
 						<button onClick={webRTC.endCall}>
 							Cortar WebRTC
@@ -102,15 +119,12 @@ function CallRoom({
 							</p>
 						)}
 
-						{!speechRecognition.listening ? (
-							<button onClick={speechRecognition.startListening}>
-								Activar subtítulos
-							</button>
-						) : (
-							<button onClick={speechRecognition.stopListening}>
-								Pausar subtítulos
-							</button>
-						)}
+						<p className="call-status">
+							Subtítulos:{' '}
+							<strong>
+								{speechRecognition.listening ? 'activos' : 'inactivos'}
+							</strong>
+						</p>
 
 						<div className="messages-container">
 							{translatorSocket.messages.map((msg) => (
