@@ -18,7 +18,6 @@ function LanguageSelector({
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
-          <option value="it">Italiano</option>
         </select>
       </label>
 
@@ -32,7 +31,6 @@ function LanguageSelector({
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
-          <option value="it">Italiano</option>
         </select>
       </label>
 

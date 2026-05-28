@@ -57,11 +57,6 @@ async function warmupTranslations() {
       sourceLanguage: "es",
       targetLanguage: "en",
     },
-    {
-      text: "ciao",
-      sourceLanguage: "it",
-      targetLanguage: "en",
-    },
   ];
 
   for (const pair of pairs) {
