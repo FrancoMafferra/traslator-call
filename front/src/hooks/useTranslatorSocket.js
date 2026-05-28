@@ -23,7 +23,9 @@ export function useTranslatorSocket() {
   };
 
   const connectSocket = () => {
-    const socket = new WebSocket("ws://192.168.100.19:3001");
+    const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
+
+    const socket = new WebSocket(WS_URL);
 
     socketRef.current = socket;
 
