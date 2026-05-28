@@ -1,62 +1,24 @@
-const LIBRETRANSLATE_URL =
-  process.env.LIBRETRANSLATE_URL || "http://127.0.0.1:5000";
-
 async function translateText({ text, sourceLanguage, targetLanguage }) {
-  const label = `[LIBRETRANSLATE ${sourceLanguage}->${targetLanguage}]`;
-  console.time(label);
-
   try {
-    const response = await fetch(`${LIBRETRANSLATE_URL}/translate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        q: text,
-        source: sourceLanguage,
-        target: targetLanguage,
-        format: "text",
-        api_key: "",
-      }),
-    });
+    const url =
+      `https://api.mymemory.translated.net/get` +
+      `?q=${encodeURIComponent(text)}` +
+      `&langpair=${sourceLanguage}|${targetLanguage}`;
 
-    const raw = await response.text();
+    const response = await fetch(url);
 
-    console.log("[LIBRETRANSLATE_RAW_RESPONSE]", {
-      status: response.status,
-      ok: response.ok,
-      contentType: response.headers.get("content-type"),
-      raw: raw.slice(0, 500),
-    });
+    const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${raw.slice(0, 200)}`);
-    }
+    const translatedText = data?.responseData?.translatedText;
 
-    if (!raw) {
-      throw new Error("Empty response from LibreTranslate");
-    }
-
-    const data = JSON.parse(raw);
-
-    console.timeEnd(label);
-
-    console.log("[LIBRETRANSLATE_RESULT]", {
+    console.log("[MYMEMORY_RESULT]", {
       originalText: text,
-      translatedText: data.translatedText,
+      translatedText,
     });
 
-    return data.translatedText || text;
+    return translatedText || text;
   } catch (error) {
-    console.timeEnd(label);
-
-    console.error("[LIBRETRANSLATE_ERROR]", {
-      text,
-      sourceLanguage,
-      targetLanguage,
-      error: error.message,
-    });
+    console.error("[MYMEMORY_ERROR]", error);
 
     return text;
   }
