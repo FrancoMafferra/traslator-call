@@ -10,16 +10,35 @@ async function translateText({ text, sourceLanguage, targetLanguage }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         q: text,
         source: sourceLanguage,
         target: targetLanguage,
         format: "text",
+        api_key: "",
       }),
     });
 
-    const data = await response.json();
+    const raw = await response.text();
+
+    console.log("[LIBRETRANSLATE_RAW_RESPONSE]", {
+      status: response.status,
+      ok: response.ok,
+      contentType: response.headers.get("content-type"),
+      raw: raw.slice(0, 500),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${raw.slice(0, 200)}`);
+    }
+
+    if (!raw) {
+      throw new Error("Empty response from LibreTranslate");
+    }
+
+    const data = JSON.parse(raw);
 
     console.timeEnd(label);
 
@@ -28,7 +47,7 @@ async function translateText({ text, sourceLanguage, targetLanguage }) {
       translatedText: data.translatedText,
     });
 
-    return data.translatedText;
+    return data.translatedText || text;
   } catch (error) {
     console.timeEnd(label);
 
