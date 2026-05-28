@@ -1,3 +1,6 @@
+const LIBRETRANSLATE_URL =
+  process.env.LIBRETRANSLATE_URL || "http://127.0.0.1:5000";
+
 async function translateText({ text, sourceLanguage, targetLanguage }) {
   const label = `[LIBRETRANSLATE ${sourceLanguage}->${targetLanguage}]`;
   console.time(label);
