@@ -1,24 +1,32 @@
+const { translate } = require("@vitalets/google-translate-api");
+
 async function translateText({ text, sourceLanguage, targetLanguage }) {
+  const label = `[GOOGLE_TRANSLATE ${sourceLanguage}->${targetLanguage}]`;
+  console.time(label);
+
   try {
-    const url =
-      `https://api.mymemory.translated.net/get` +
-      `?q=${encodeURIComponent(text)}` +
-      `&langpair=${sourceLanguage}|${targetLanguage}`;
-
-    const response = await fetch(url);
-
-    const data = await response.json();
-
-    const translatedText = data?.responseData?.translatedText;
-
-    console.log("[MYMEMORY_RESULT]", {
-      originalText: text,
-      translatedText,
+    const result = await translate(text, {
+      from: sourceLanguage,
+      to: targetLanguage,
     });
 
-    return translatedText || text;
+    console.timeEnd(label);
+
+    console.log("[GOOGLE_TRANSLATE_RESULT]", {
+      originalText: text,
+      translatedText: result.text,
+    });
+
+    return result.text || text;
   } catch (error) {
-    console.error("[MYMEMORY_ERROR]", error);
+    console.timeEnd(label);
+
+    console.error("[GOOGLE_TRANSLATE_ERROR]", {
+      text,
+      sourceLanguage,
+      targetLanguage,
+      error: error.message,
+    });
 
     return text;
   }
@@ -27,22 +35,17 @@ async function translateText({ text, sourceLanguage, targetLanguage }) {
 async function warmupTranslations() {
   console.log("[WARMUP_TRANSLATIONS] iniciando...");
 
-  const pairs = [
-    {
-      text: "hello",
-      sourceLanguage: "en",
-      targetLanguage: "es",
-    },
-    {
-      text: "hola",
-      sourceLanguage: "es",
-      targetLanguage: "en",
-    },
-  ];
+  await translateText({
+    text: "hello",
+    sourceLanguage: "en",
+    targetLanguage: "es",
+  });
 
-  for (const pair of pairs) {
-    await translateText(pair);
-  }
+  await translateText({
+    text: "hola",
+    sourceLanguage: "es",
+    targetLanguage: "en",
+  });
 
   console.log("[WARMUP_TRANSLATIONS] listo");
 }
