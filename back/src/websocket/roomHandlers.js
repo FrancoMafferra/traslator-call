@@ -89,13 +89,18 @@ function handleDisconnect({ ws, rooms }) {
 }
 
 async function handleSpeechText({ ws, rooms, message }) {
-  const pipelineLabel = `[PIPELINE ${Date.now()}]`;
+  const messageId = `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+
+  const pipelineLabel = `[PIPELINE ${messageId}]`;
   console.time(pipelineLabel);
 
   const roomId = ws.roomId;
 
   if (!roomId || !rooms[roomId]) {
     console.log("[SPEECH_IGNORED]", {
+      messageId,
       reason: "room_not_found",
       roomId,
       text: message.text,
@@ -109,6 +114,7 @@ async function handleSpeechText({ ws, rooms, message }) {
     message.fromLanguage || ws.languageConfig?.spokenLanguage || "en";
 
   console.log("[SPEECH_RECEIVED]", {
+    messageId,
     roomId,
     text: message.text,
     sourceLanguage,
@@ -116,58 +122,69 @@ async function handleSpeechText({ ws, rooms, message }) {
     usersInRoom: rooms[roomId].length,
   });
 
-  for (const client of rooms[roomId]) {
-    if (client === ws) continue;
+  const recipients = rooms[roomId].filter((client) => {
+    return client !== ws && client.readyState === 1;
+  });
 
-    if (client.readyState !== 1) {
-      console.log("[TRANSLATION_SKIPPED]", {
-        reason: "client_not_open",
-        readyState: client.readyState,
+  if (recipients.length === 0) {
+    console.log("[TRANSLATION_SKIPPED]", {
+      messageId,
+      reason: "no_available_recipients",
+      roomId,
+    });
+
+    console.timeEnd(pipelineLabel);
+    return;
+  }
+
+  await Promise.all(
+    recipients.map(async (client) => {
+      const targetLanguage =
+        client.languageConfig?.listenLanguage || "en";
+
+      console.log("[TRANSLATION_START]", {
+        messageId,
+        text: message.text,
+        sourceLanguage,
+        targetLanguage,
+        receptorConfig: client.languageConfig,
       });
 
-      continue;
-    }
+      const translatedText =
+        sourceLanguage === targetLanguage
+          ? message.text
+          : await translateText({
+              text: message.text,
+              sourceLanguage,
+              targetLanguage,
+            });
 
-    const targetLanguage = client.languageConfig?.listenLanguage || "en";
-
-    console.log("[TRANSLATION_START]", {
-      text: message.text,
-      sourceLanguage,
-      targetLanguage,
-      receptorConfig: client.languageConfig,
-    });
-
-    const translatedText =
-      sourceLanguage === targetLanguage
-        ? message.text
-        : await translateText({
-            text: message.text,
-            sourceLanguage,
-            targetLanguage,
-          });
-
-    console.log("[TRANSLATION_DONE]", {
-      originalText: message.text,
-      translatedText,
-      sourceLanguage,
-      targetLanguage,
-    });
-
-    client.send(
-      JSON.stringify({
-        type: "TRANSLATED_TEXT",
+      console.log("[TRANSLATION_DONE]", {
+        messageId,
         originalText: message.text,
         translatedText,
-        fromLanguage: sourceLanguage,
+        sourceLanguage,
         targetLanguage,
-      }),
-    );
+      });
 
-    console.log("[TRANSLATED_TEXT_SENT]", {
-      roomId,
-      targetLanguage,
-    });
-  }
+      client.send(
+        JSON.stringify({
+          type: "TRANSLATED_TEXT",
+          messageId,
+          originalText: message.text,
+          translatedText,
+          fromLanguage: sourceLanguage,
+          targetLanguage,
+        }),
+      );
+
+      console.log("[TRANSLATED_TEXT_SENT]", {
+        messageId,
+        roomId,
+        targetLanguage,
+      });
+    }),
+  );
 
   console.timeEnd(pipelineLabel);
 }

@@ -56,7 +56,7 @@ function CallRoom({
 		<div className="room-screen">
 			<div className="room-header">
 				<div>
-					<h2>Sala {translatorSocket.roomId}</h2>
+					<h2>Sala: {translatorSocket.roomId}</h2>
 
 					<p>
 						Usuarios conectados: {translatorSocket.usersCount}/2
