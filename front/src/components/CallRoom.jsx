@@ -1,169 +1,182 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
+import { getUiTexts } from "../i18n/uiTexts";
 
 function CallRoom({
-	translatorSocket,
-	microphone,
-	audioSender,
-	speechRecognition,
-	webRTC,
-	textToSpeech,
+  translatorSocket,
+  microphone,
+  audioSender,
+  speechRecognition,
+  webRTC,
+  textToSpeech,
 }) {
-	const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const t = getUiTexts(translatorSocket.listenLanguage);
 
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({
-			behavior: 'smooth',
-		});
+  const callStatus =
+    t.callStatuses[webRTC.webrtcStatus] || webRTC.webrtcStatus;
 
-		const lastMessage =
-			translatorSocket.messages[translatorSocket.messages.length - 1];
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
 
-		if (lastMessage?.type === 'received') {
-			textToSpeech?.speak({
-				text: lastMessage.translatedText,
-				language: lastMessage.targetLanguage,
-			});
-		}
-	}, [translatorSocket.messages]);
+    const lastMessage =
+      translatorSocket.messages[
+        translatorSocket.messages.length - 1
+      ];
 
-	useEffect(() => {
-		if (!microphone.microphoneReady) return;
-		if (speechRecognition.listening) return;
+    if (lastMessage?.type === "received") {
+      textToSpeech?.speak({
+        text: lastMessage.translatedText,
+        language: lastMessage.targetLanguage,
+      });
+    }
+  }, [translatorSocket.messages, textToSpeech]);
 
-		speechRecognition.startListening();
-	}, [
-		microphone.microphoneReady,
-		speechRecognition.listening,
-	]);
+  useEffect(() => {
+    if (!microphone.microphoneReady) return;
+    if (speechRecognition.listening) return;
 
-	if (!speechRecognition) {
-		return <p>Cargando reconocimiento de voz...</p>;
-	}
+    speechRecognition.startListening();
+  }, [
+    microphone.microphoneReady,
+    speechRecognition.listening,
+    speechRecognition,
+  ]);
 
-	if (!webRTC) {
-		return (
-			<p style={{ color: 'red' }}>
-				Error: webRTC no fue inicializado. Revisar useWebRTC.js.
-			</p>
-		);
-	}
+  if (!speechRecognition) {
+    return <p>{t.loadingSpeech}</p>;
+  }
 
-	const leaveRoom = () => {
-		window.location.reload();
-	};
+  if (!webRTC) {
+    return (
+      <p style={{ color: "red" }}>
+        {t.webRTCError}
+      </p>
+    );
+  }
 
-	return (
-		<div className="room-screen">
-			<div className="room-header">
-				<div>
-					<h2>Sala: {translatorSocket.roomId}</h2>
+  const leaveRoom = () => {
+    window.location.reload();
+  };
 
-					<p>
-						Usuarios conectados: {translatorSocket.usersCount}/2
-					</p>
-				</div>
+  return (
+    <div className="room-screen">
+      <div className="room-header">
+        <div>
+          <h2>
+            {t.room}: {translatorSocket.roomId}
+          </h2>
 
-				<button onClick={leaveRoom}>Salir</button>
-			</div>
+          <p>
+            {t.connectedUsers}: {translatorSocket.usersCount}/2
+          </p>
+        </div>
 
-			<div className="room-body">
-				<div className="left-panel">
-					<div className="room-card">
-						<p>
-							Micrófono:{' '}
-							<strong>
-								{microphone.microphoneReady
-									? 'listo'
-									: 'no disponible'}
-							</strong>
-						</p>
+        <button onClick={leaveRoom}>
+          {t.leave}
+        </button>
+      </div>
 
-						<p>
-							Audio WebRTC:{' '}
-							<strong>{webRTC.webrtcStatus}</strong>
-						</p>
+      <div className="room-body">
+        <div className="left-panel">
+          <div className="room-card">
+            <p>
+              {t.microphone}:{" "}
+              <strong>
+                {microphone.microphoneReady
+                  ? t.ready
+                  : t.unavailable}
+              </strong>
+            </p>
 
-						<p>
-							Voz traducida:{' '}
-							<strong>activa</strong>
-						</p>
-					</div>
+            <p>
+              {t.callStatus}:{" "}
+              <strong>{callStatus}</strong>
+            </p>
 
-					<div className="webrtc-box">
-						<p>
-							WebRTC: <strong>{webRTC.webrtcStatus}</strong>
-						</p>
+            <p>
+              {t.translatedVoice}:{" "}
+              <strong>{t.active}</strong>
+            </p>
+          </div>
 
-						{!webRTC.webrtcConnected ? (
-							<button onClick={webRTC.startCallAsCaller}>
-								Iniciar llamada WebRTC
-							</button>
-						) : (
-							<button disabled>
-								Llamada WebRTC iniciada
-							</button>
-						)}
+          <div className="webrtc-box">
+            <p>
+              {t.call}: <strong>{callStatus}</strong>
+            </p>
 
-						<button onClick={webRTC.endCall}>
-							Cortar WebRTC
-						</button>
-					</div>
-				</div>
+            {!webRTC.webrtcConnected ? (
+              <button onClick={webRTC.startCallAsCaller}>
+                {t.connectCall}
+              </button>
+            ) : (
+              <button disabled>
+                {t.callConnected}
+              </button>
+            )}
 
-				<div className="right-panel">
-					<div className="speech-box">
-						{!speechRecognition.speechSupported && (
-							<p className="error-message">
-								Tu navegador no soporta reconocimiento de voz.
-								Probá con Chrome o Edge.
-							</p>
-						)}
+            <button onClick={webRTC.endCall}>
+              {t.endCall}
+            </button>
+          </div>
+        </div>
 
-						<p className="call-status">
-							Subtítulos:{' '}
-							<strong>
-								{speechRecognition.listening ? 'activos' : 'inactivos'}
-							</strong>
-						</p>
+        <div className="right-panel">
+          <div className="speech-box">
+            {!speechRecognition.speechSupported && (
+              <p className="error-message">
+                {t.speechNotSupported}
+              </p>
+            )}
 
-						<div className="messages-container">
-							{translatorSocket.messages.map((msg) => (
-								<div
-									key={msg.id}
-									className={
-										msg.type === 'mine'
-											? 'message mine'
-											: 'message received'
-									}
-								>
-									{msg.type === 'mine' ? (
-										<p>{msg.text}</p>
-									) : (
-										<>
-											<p>{msg.translatedText}</p>
+            <p className="call-status">
+              {t.subtitles}:{" "}
+              <strong>
+                {speechRecognition.listening
+                  ? t.subtitlesActive
+                  : t.subtitlesInactive}
+              </strong>
+            </p>
 
-											<span>
-												{msg.fromLanguage} → {msg.targetLanguage}
-											</span>
-										</>
-									)}
-								</div>
-							))}
+            <div className="messages-container">
+              {translatorSocket.messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={
+                    msg.type === "mine"
+                      ? "message mine"
+                      : "message received"
+                  }
+                >
+                  {msg.type === "mine" ? (
+                    <p>{msg.text}</p>
+                  ) : (
+                    <>
+                      <p>{msg.translatedText}</p>
 
-							<div ref={messagesEndRef} />
-						</div>
-					</div>
-				</div>
+                      <span>
+                        {msg.fromLanguage} → {msg.targetLanguage}
+                      </span>
+                    </>
+                  )}
+                </div>
+              ))}
 
-				<audio
-					ref={webRTC.remoteAudioRef}
-					autoPlay
-					playsInline
-					muted={true}
-				/>
-			</div>
-		</div>
-	);
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        </div>
+
+        <audio
+          ref={webRTC.remoteAudioRef}
+          autoPlay
+          playsInline
+          muted
+        />
+      </div>
+    </div>
+  );
 }
 
 export default CallRoom;

@@ -5,8 +5,22 @@ function CallControls({
   microphoneError,
   requestMicrophone,
   textToSpeech,
+  hasLanguages,
+  onOpenLanguageModal,
+  t,
 }) {
+  const validateLanguages = () => {
+    if (!hasLanguages) {
+      onOpenLanguageModal();
+      return false;
+    }
+
+    return true;
+  };
+
   const enterCall = async () => {
+    if (!validateLanguages()) return;
+
     const stream = await requestMicrophone();
 
     textToSpeech?.warmupVoices();
@@ -17,6 +31,8 @@ function CallControls({
   };
 
   const enterAsViewer = () => {
+    if (!validateLanguages()) return;
+
     textToSpeech?.warmupVoices();
 
     if (!connected) {
@@ -28,11 +44,11 @@ function CallControls({
     return (
       <div className="call-box ready">
         <p className="call-status">
-          Micrófono: <strong>listo</strong>
+          {t.microphone}: <strong>{t.ready}</strong>
         </p>
 
         <p className="call-hint">
-          Ya podés configurar tus idiomas y entrar a una sala.
+          {t.readyHint}
         </p>
       </div>
     );
@@ -41,19 +57,19 @@ function CallControls({
   return (
     <div className="call-box">
       <button onClick={enterCall}>
-        Entrar a la llamada
+        {t.enterCall}
       </button>
 
       <button onClick={enterAsViewer}>
-        Entrar como espectador
+        {t.enterViewer}
       </button>
 
       <p className="call-status">
-        Micrófono: <strong>pendiente</strong>
+        {t.microphone}: <strong>{t.pending}</strong>
       </p>
 
       <p className="call-hint">
-        Usá espectador si solo querés recibir subtítulos y voz traducida.
+        {t.viewerHint}
       </p>
 
       {microphoneError && (

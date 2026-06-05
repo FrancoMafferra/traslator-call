@@ -10,8 +10,8 @@ export function useTranslatorSocket() {
   const [usersCount, setUsersCount] = useState(0);
   const [status, setStatus] = useState("Desconectado");
 
-  const [spokenLanguage, setSpokenLanguage] = useState("es");
-  const [listenLanguage, setListenLanguage] = useState("es");
+  const [spokenLanguage, setSpokenLanguage] = useState("");
+  const [listenLanguage, setListenLanguage] = useState("");
   const [languageSaved, setLanguageSaved] = useState(false);
   const [receivedText, setReceivedText] = useState("");
   const [messages, setMessages] = useState([]);
@@ -22,7 +22,24 @@ export function useTranslatorSocket() {
     webrtcHandlersRef.current = handlers;
   };
 
+  const sendLanguageConfig = (socket = socketRef.current) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    if (!spokenLanguage || !listenLanguage) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "SET_LANGUAGE_CONFIG",
+        spokenLanguage,
+        listenLanguage,
+      }),
+    );
+  };
+
   const connectSocket = () => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
     const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
 
     const socket = new WebSocket(WS_URL);
@@ -32,6 +49,7 @@ export function useTranslatorSocket() {
     socket.onopen = () => {
       setConnected(true);
       setStatus("Conectado al servidor");
+      sendLanguageConfig(socket);
     };
 
     socket.onmessage = (event) => {
@@ -66,7 +84,7 @@ export function useTranslatorSocket() {
         setMessages((prev) => [
           ...prev,
           {
-            id: Date.now(),
+            id: message.messageId || Date.now(),
             type: "received",
             originalText: message.originalText,
             translatedText: message.translatedText,
@@ -93,9 +111,15 @@ export function useTranslatorSocket() {
       setConnected(false);
       setStatus("Desconectado");
     };
+
+    socket.onerror = () => {
+      setStatus("Error de conexión");
+    };
   };
 
   const createRoom = () => {
+    sendLanguageConfig();
+
     socketRef.current?.send(
       JSON.stringify({
         type: "CREATE_ROOM",
@@ -104,6 +128,8 @@ export function useTranslatorSocket() {
   };
 
   const joinRoom = () => {
+    sendLanguageConfig();
+
     socketRef.current?.send(
       JSON.stringify({
         type: "JOIN_ROOM",
@@ -113,13 +139,7 @@ export function useTranslatorSocket() {
   };
 
   const saveLanguageConfig = () => {
-    socketRef.current?.send(
-      JSON.stringify({
-        type: "SET_LANGUAGE_CONFIG",
-        spokenLanguage,
-        listenLanguage,
-      }),
-    );
+    sendLanguageConfig();
   };
 
   const addOwnMessage = (message) => {
@@ -139,6 +159,7 @@ export function useTranslatorSocket() {
     listenLanguage,
     languageSaved,
     receivedText,
+    messages,
 
     setRoomInput,
     setSpokenLanguage,
@@ -150,6 +171,5 @@ export function useTranslatorSocket() {
     saveLanguageConfig,
     registerWebRTCHandlers,
     addOwnMessage,
-    messages,
   };
 }

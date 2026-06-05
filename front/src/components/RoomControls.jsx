@@ -1,3 +1,5 @@
+import { getUiTexts } from "../i18n/uiTexts";
+
 function RoomControls({
   createRoom,
   roomInput,
@@ -5,11 +7,14 @@ function RoomControls({
   joinRoom,
   roomId,
   usersCount,
+  listenLanguage,
 }) {
+  const t = getUiTexts(listenLanguage);
+
   return (
     <>
       <button onClick={createRoom}>
-        Crear sala
+        {t.createRoom}
       </button>
 
       <div className="join-box">
@@ -18,22 +23,22 @@ function RoomControls({
           onChange={(e) =>
             setRoomInput(e.target.value)
           }
-          placeholder="Código de sala"
+          placeholder={t.roomCode}
         />
 
         <button onClick={joinRoom}>
-          Unirse
+          {t.join}
         </button>
       </div>
 
       {roomId && (
         <div className="room-info">
           <p>
-            Sala: <strong>{roomId}</strong>
+            {t.room}: <strong>{roomId}</strong>
           </p>
 
           <p>
-            Usuarios conectados:{' '}
+            {t.connectedUsers}:{" "}
             <strong>{usersCount}/2</strong>
           </p>
         </div>

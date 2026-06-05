@@ -10,6 +10,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useEffect } from 'react';
 import { useWebRTC } from './hooks/useWebRTC';
 import { useTextToSpeech } from './hooks/useTextToSpeech';
+import { getUiTexts } from './i18n/uiTexts';
 
 function App() {
   const translatorSocket = useTranslatorSocket();
@@ -42,14 +43,17 @@ function App() {
     });
   }, [translatorSocket, webRTC]);
 
+  const t = getUiTexts(
+    translatorSocket.listenLanguage || "es"
+  );
+
   return (
     <main className="container">
       <section className={translatorSocket.roomId ? 'call-layout' : 'card'}>
         <h1>Translator Call</h1>
 
         <p className="subtitle">
-          Llamadas con traducción de audio en
-          tiempo real
+          {t.appSubtitle}
         </p>
 
         {!translatorSocket.roomId ? (

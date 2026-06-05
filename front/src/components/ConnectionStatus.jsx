@@ -1,7 +1,14 @@
-function ConnectionStatus({ status }) {
+import { getUiTexts } from "../i18n/uiTexts";
+
+function ConnectionStatus({ status, language }) {
+  const t = getUiTexts(language);
+
+  const translatedStatus =
+    t.connectionStatuses[status] || status;
+
   return (
     <div className="status">
-      Estado: <strong>{status}</strong>
+      {t.status}: <strong>{translatedStatus}</strong>
     </div>
   );
 }
